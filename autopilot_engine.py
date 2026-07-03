@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎬 VIRAL SHORTS AI AGENCY — SUPER SIMPLE VERSION!
+🎬 VIRAL SHORTS AI AGENCY — NO UPLOAD VERSION!
 ====================================================
-✅ 100% CRASH-PROOF (no complex video editing!)
-✅ Just combines image + audio (like a video slide!)
-✅ Works 100% of the time!
+✅ 100% CRASH-PROOF (no external uploads!)
+✅ Saves videos directly on Render server
+✅ Direct download link (instant!)
 ✅ 100% FREE, 100% automated!
 """
 
@@ -14,7 +14,7 @@ import time
 import json
 import requests
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_file
 
 # ==========================================
 # ENVIRONMENT VARIABLES (Set in Render.com)
@@ -25,6 +25,12 @@ PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "YOUR_PEXELS_API_KEY_HERE")
 # FLASK APP
 # ==========================================
 app = Flask(__name__)
+
+# ==========================================
+# CREATE FOLDER FOR VIDEOS
+# ==========================================
+VIDEOS_FOLDER = "generated_videos"
+os.makedirs(VIDEOS_FOLDER, exist_ok=True)
 
 # ==========================================
 # HTML WEBSITE (Same as before!)
@@ -495,15 +501,14 @@ HTML_TEMPLATE = """
             const steps = [
                 '🎤 Generating voiceover...',
                 '🖼️ Downloading background image...',
-                '🎥 Combining into video...',
-                '☁️ Uploading to cloud...'
+                '🎥 Combining into video...'
             ];
             
             const interval = setInterval(() => {
                 if (progress < 90) {
                     progress += 10;
                     progressFill.style.width = progress + '%';
-                    progressText.textContent = steps[Math.floor(progress / 25)];
+                    progressText.textContent = steps[Math.floor(progress / 30)];
                 }
             }, 1000);
             
@@ -580,7 +585,7 @@ def generate_voiceover(script_text, output_path="voiceover.mp3"):
             return None
 
 def download_background_image(bg_theme, output_path="background.jpg"):
-    """Download a static image (NOT video!) from Pexels API"""
+    """Download a static image from Pexels API"""
     try:
         theme_queries = {
             "Business/Office": "office work business professional",
@@ -666,42 +671,6 @@ def combine_image_and_audio(image_path, audio_path, output_path="final_video.mp4
         print(f"❌ FFmpeg error: {e}")
         return None
 
-def upload_to_free_host(video_path, host="file.io"):
-    """Upload video to free cloud host"""
-    try:
-        with open(video_path, "rb") as f:
-            response = requests.post(
-                "https://file.io",
-                files={"file": f},
-                timeout=60
-            )
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                download_link = data["link"]
-                print(f"✅ Video uploaded to file.io: {download_link}")
-                return download_link
-        
-        # Fallback to transfer.sh
-        with open(video_path, "rb") as f:
-            response = requests.put(
-                f"https://transfer.sh/{Path(video_path).name}",
-                data=f,
-                timeout=60
-            )
-        
-        if response.status_code == 200:
-            download_link = response.text.strip()
-            print(f"✅ Video uploaded to transfer.sh: {download_link}")
-            return download_link
-        
-        return None
-    
-    except Exception as e:
-        print(f"❌ Upload error: {e}")
-        return None
-
 # ==========================================
 # FLASK ROUTES
 # ==========================================
@@ -712,7 +681,7 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate_video():
-    """API endpoint to generate video (SUPER SIMPLE!)"""
+    """API endpoint to generate video (NO UPLOAD!)"""
     try:
         payload = request.json
         
@@ -721,50 +690,63 @@ def generate_video():
         
         script = payload["script"]
         
+        # Generate unique filename
+        import uuid
+        video_id = str(uuid.uuid4())[:8]
+        video_filename = f"video_{video_id}.mp4"
+        video_path = os.path.join(VIDEOS_FOLDER, video_filename)
+        
         # Step 1: Voiceover
-        print("🎤 Step 1/4: Generating voiceover...")
+        print("🎤 Step 1/3: Generating voiceover...")
         voiceover_path = generate_voiceover(script)
         if not voiceover_path:
             return jsonify({"error": "Voiceover generation failed"}), 500
         
-        # Step 2: Background image (STATIC!)
-        print("🖼️ Step 2/4: Downloading background image...")
+        # Step 2: Background image
+        print("🖼️ Step 2/3: Downloading background image...")
         background_path = download_background_image(payload.get("bg_theme", "Custom"))
         if not background_path:
             return jsonify({"error": "Background image download failed"}), 500
         
         # Step 3: Combine image + audio
-        print("🎥 Step 3/4: Combining image + audio...")
-        final_video_path = combine_image_and_audio(background_path, voiceover_path)
+        print("🎥 Step 3/3: Combining image + audio...")
+        final_video_path = combine_image_and_audio(background_path, voiceover_path, video_path)
         if not final_video_path:
             return jsonify({"error": "Video creation failed"}), 500
         
-        # Step 4: Upload
-        print("☁️ Step 4/4: Uploading...")
-        download_link = upload_to_free_host(final_video_path)
+        # Generate download link (NO UPLOAD!)
+        download_link = f"/download/{video_filename}"
         
-        if download_link:
-            return jsonify({
-                "success": True,
-                "download_link": download_link,
-                "message": "Your video is ready!"
-            }), 200
-        else:
-            return jsonify({"error": "Upload failed"}), 500
+        return jsonify({
+            "success": True,
+            "download_link": download_link,
+            "message": "Your video is ready!"
+        }), 200
     
     except Exception as e:
         print(f"❌ Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route("/download/<filename>")
+def download_video(filename):
+    """Serve the video file directly"""
+    video_path = os.path.join(VIDEOS_FOLDER, filename)
+    
+    if os.path.exists(video_path):
+        return send_file(video_path, as_attachment=True)
+    else:
+        return "File not found!", 404
 
 # ==========================================
 # RUN THE APP
 # ==========================================
 if __name__ == "__main__":
     print("\n" + "="*50)
-    print("🚀 STARTING VIRAL SHORTS AI AGENCY (SUPER SIMPLE!)")
+    print("🚀 STARTING VIRAL SHORTS AI AGENCY (NO UPLOAD!)")
     print("="*50)
-    print("✅ NO complex video editing (no crashes!)")
-    print("✅ Just image + audio = video!")
+    print("✅ NO external uploads (no failures!)")
+    print("✅ Videos saved directly on Render server")
+    print("✅ Direct download link (instant!)")
     print("✅ 100% CRASH-PROOF!")
     print("="*50 + "\n")
     
