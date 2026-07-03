@@ -183,7 +183,7 @@ if submitted:
     }
     
     # TODO: Replace with your actual Render.com URL
-    RENDER_SERVER_URL = "https://YOUR-RENDER-APP.onrender.com/generate"
+    RENDER_SERVER_URL = "https://viral-shorts-autopilot.onrender.com/generate"
     
     try:
         # Send request to Render server
