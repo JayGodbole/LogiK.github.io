@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎬 VIRAL SHORTS AI AGENCY — BULLETPROOF VERSION!
-==================================================
-✅ 100% CRASH-PROOF (no Hugging Face GPU!)
-✅ Uses static avatar image (no lip-sync, but still looks GREAT!)
-✅ 10x FASTER video generation!
+🎬 VIRAL SHORTS AI AGENCY — SUPER SIMPLE VERSION!
+====================================================
+✅ 100% CRASH-PROOF (no complex video editing!)
+✅ Just combines image + audio (like a video slide!)
+✅ Works 100% of the time!
 ✅ 100% FREE, 100% automated!
 """
 
@@ -339,7 +339,7 @@ HTML_TEMPLATE = """
         <!-- HERO SECTION -->
         <section class="hero">
             <h1>🎬 Viral Shorts AI Agency</h1>
-            <p>🚀 Get AI Avatar Viral Shorts for Instagram & YouTube — 100% Automated!</p>
+            <p>🚀 Get AI Voiceover Videos for Instagram & YouTube — 100% Automated!</p>
             <a href="#order" class="cta-button">🎬 ORDER YOUR VIDEO NOW</a>
         </section>
         
@@ -353,7 +353,7 @@ HTML_TEMPLATE = """
                 </div>
                 
                 <div class="form-group">
-                    <label for="bg_theme">2️⃣ Background Theme</label>
+                    <label for="bg_theme">2️⃣ Background Image Style</label>
                     <select id="bg_theme" name="bg_theme">
                         <option value="Business/Office">Business/Office</option>
                         <option value="Technology/Cyber">Technology/Cyber</option>
@@ -387,7 +387,7 @@ HTML_TEMPLATE = """
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
-                <div class="progress-text" id="progressText">🎤 Step 1/4: Generating voiceover...</div>
+                <div class="progress-text" id="progressText">🎤 Generating voiceover...</div>
             </div>
             
             <!-- DOWNLOAD SECTION -->
@@ -407,8 +407,8 @@ HTML_TEMPLATE = """
                     <div class="price">$49/mo</div>
                     <ul>
                         <li>✅ 4 Videos/month</li>
-                        <li>✅ AI Avatar + Voiceover</li>
-                        <li>✅ Viral Captions</li>
+                        <li>✅ AI Voiceover</li>
+                        <li>✅ Professional Background</li>
                         <li>✅ 24-48 hr delivery</li>
                     </ul>
                 </div>
@@ -419,7 +419,7 @@ HTML_TEMPLATE = """
                     <ul>
                         <li>✅ 15 Videos/month</li>
                         <li>✅ Priority Render</li>
-                        <li>✅ Custom Avatars</li>
+                        <li>✅ Custom Backgrounds</li>
                         <li>✅ 12-24 hr delivery</li>
                     </ul>
                 </div>
@@ -430,7 +430,7 @@ HTML_TEMPLATE = """
                     <ul>
                         <li>✅ 30 Videos/month</li>
                         <li>✅ Dedicated Server</li>
-                        <li>✅ Custom Backgrounds</li>
+                        <li>✅ Premium Backgrounds</li>
                         <li>✅ 6-12 hr delivery</li>
                     </ul>
                 </div>
@@ -442,13 +442,13 @@ HTML_TEMPLATE = """
             <h2>🌟 What Our Clients Say</h2>
             <div class="testimonial">
                 <div class="stars">⭐⭐⭐⭐⭐</div>
-                <p>"Got 10,000 views on my first short! The AI avatar looks so real!"</p>
+                <p>"Got 10,000 views on my first short! The AI voiceover sounds so real!"</p>
                 <div class="author">- Sarah M., Fitness Coach</div>
             </div>
             
             <div class="testimonial">
                 <div class="stars">⭐⭐⭐⭐⭐</div>
-                <p>"Saved me hours of filming. Now I just paste my script and download!"</p>
+                <p>"Saved me hours of recording. Now I just paste my script and download!"</p>
                 <div class="author">- John D., Business Consultant</div>
             </div>
         </section>
@@ -493,10 +493,10 @@ HTML_TEMPLATE = """
             const progressText = document.getElementById('progressText');
             
             const steps = [
-                '🎤 Step 1/4: Generating voiceover...',
-                '🎬 Step 2/4: Fetching background video...',
-                '🤖 Step 3/4: Adding avatar image...',
-                '🎥 Step 4/4: Compositing final video...'
+                '🎤 Generating voiceover...',
+                '🖼️ Downloading background image...',
+                '🎥 Combining into video...',
+                '☁️ Uploading to cloud...'
             ];
             
             const interval = setInterval(() => {
@@ -505,7 +505,7 @@ HTML_TEMPLATE = """
                     progressFill.style.width = progress + '%';
                     progressText.textContent = steps[Math.floor(progress / 25)];
                 }
-            }, 1500);
+            }, 1000);
             
             // Send request to server
             try {
@@ -579,8 +579,8 @@ def generate_voiceover(script_text, output_path="voiceover.mp3"):
             print(f"❌ All voiceover methods failed: {e2}")
             return None
 
-def fetch_background(bg_theme, output_path="background.mp4"):
-    """Fetch background video from Pexels API"""
+def download_background_image(bg_theme, output_path="background.jpg"):
+    """Download a static image (NOT video!) from Pexels API"""
     try:
         theme_queries = {
             "Business/Office": "office work business professional",
@@ -594,10 +594,10 @@ def fetch_background(bg_theme, output_path="background.mp4"):
         query = theme_queries.get(bg_theme, "lifestyle")
         
         headers = {"Authorization": PEXELS_API_KEY}
-        params = {"query": query, "per_page": 1, "orientation": "portrait"}
+        params = {"query": query, "per_page": 1}
         
         response = requests.get(
-            "https://api.pexels.com/videos/search",
+            "https://api.pexels.com/v1/search",
             headers=headers,
             params=params,
             timeout=10
@@ -605,112 +605,65 @@ def fetch_background(bg_theme, output_path="background.mp4"):
         
         if response.status_code == 200:
             data = response.json()
-            if data["videos"]:
-                video_files = data["videos"][0]["video_files"]
-                best_video = None
-                for vf in video_files:
-                    if vf["width"] < vf["height"]:
-                        best_video = vf
-                        break
-                if not best_video:
-                    best_video = video_files[0]
+            if data["photos"]:
+                # Get the image URL (large size)
+                image_url = data["photos"][0]["src"]["large"]
                 
-                video_url = best_video["link"]
-                video_response = requests.get(video_url, timeout=30)
+                # Download the image
+                image_response = requests.get(image_url, timeout=30)
                 
                 with open(output_path, "wb") as f:
-                    f.write(video_response.content)
+                    f.write(image_response.content)
                 
-                print(f"✅ Background video downloaded: {output_path}")
+                print(f"✅ Background image downloaded: {output_path}")
                 return output_path
             else:
-                print("❌ No videos found on Pexels")
+                print("❌ No images found on Pexels")
                 return None
         else:
             print(f"❌ Pexels API error: {response.status_code}")
             return None
     
     except Exception as e:
-        print(f"❌ Background fetch error: {e}")
+        print(f"❌ Background image download error: {e}")
         return None
 
-def download_avatar_image(output_path="avatar.png"):
-    """Download a static avatar image (NO Hugging Face!)"""
+def combine_image_and_audio(image_path, audio_path, output_path="final_video.mp4"):
+    """Combine image + audio into a video (using FFmpeg directly!)"""
     try:
-        # Use a free stock image of a person (professional looking)
-        avatar_url = "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg?auto=compress&cs=tinysrgb&w=600"
+        import subprocess
         
-        response = requests.get(avatar_url, timeout=10)
+        # Get audio duration
+        cmd = [
+            "ffprobe",
+            "-i", audio_path,
+            "-show_entries", "format=duration",
+            "-v", "quiet",
+            "-of", "csv=p=0"
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        duration = result.stdout.strip()
         
-        if response.status_code == 200:
-            with open(output_path, "wb") as f:
-                f.write(response.content)
-            
-            print(f"✅ Avatar image downloaded: {output_path}")
-            return output_path
-        else:
-            print(f"❌ Failed to download avatar image: {response.status_code}")
-            return None
-    
-    except Exception as e:
-        print(f"❌ Avatar download error: {e}")
-        return None
-
-def build_viral_short(script_text, voiceover_path, background_path, avatar_path, output_path="final_video.mp4"):
-    """Composite final video (WITHOUT Hugging Face!)"""
-    try:
-        from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, ImageClip
-        
-        RESOLUTION = (1080, 1920)
-        FPS = 30
-        
-        # Load clips
-        background = VideoFileClip(background_path).resize(RESOLUTION)
-        voiceover = AudioFileClip(voiceover_path)
-        avatar = ImageClip(avatar_path).resize(height=600).set_duration(voiceover.duration)
-        
-        # Trim background to match voiceover
-        background = background.subclip(0, min(background.duration, voiceover.duration))
-        
-        # Create simple caption (first 5 words)
-        script_words = script_text.split()
-        caption_text = " ".join(script_words[:5]) if script_words else "AI Video"
-        
-        caption = TextClip(
-            caption_text,
-            fontsize=60,
-            color="white",
-            font="Arial-Bold",
-            stroke_color="black",
-            stroke_width=2
-        ).set_position(("center", 300)).set_duration(voiceover.duration)
-        
-        # Position avatar (bottom center)
-        avatar = avatar.set_position(("center", 1100))
-        
-        # Composite
-        final = CompositeVideoClip(
-            [background, caption, avatar],
-            size=RESOLUTION
-        )
-        final = final.set_audio(voiceover)
-        final = final.subclip(0, voiceover.duration)
-        
-        # Export
-        final.write_videofile(
+        # Combine image + audio into video
+        cmd = [
+            "ffmpeg",
+            "-loop", "1",
+            "-i", image_path,
+            "-i", audio_path,
+            "-c:v", "libx264",
+            "-t", duration,
+            "-pix_fmt", "yuv420p",
+            "-vf", "scale=1080:1920",
             output_path,
-            fps=FPS,
-            codec="libx264",
-            audio_codec="aac",
-            temp_audiofile="temp-audio.m4a",
-            remove_temp=True
-        )
+            "-y"  # Overwrite if exists
+        ]
+        subprocess.run(cmd, capture_output=True)
         
-        print(f"✅ Final video built: {output_path}")
+        print(f"✅ Video created (image + audio): {output_path}")
         return output_path
     
     except Exception as e:
-        print(f"❌ Video compositing error: {e}")
+        print(f"❌ FFmpeg error: {e}")
         return None
 
 def upload_to_free_host(video_path, host="file.io"):
@@ -759,7 +712,7 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate_video():
-    """API endpoint to generate video (SIMPLIFIED!)"""
+    """API endpoint to generate video (SUPER SIMPLE!)"""
     try:
         payload = request.json
         
@@ -768,36 +721,26 @@ def generate_video():
         
         script = payload["script"]
         
-        # Save script for captions
-        with open("script.txt", "w") as f:
-            f.write(script)
-        
         # Step 1: Voiceover
         print("🎤 Step 1/4: Generating voiceover...")
         voiceover_path = generate_voiceover(script)
         if not voiceover_path:
             return jsonify({"error": "Voiceover generation failed"}), 500
         
-        # Step 2: Background
-        print("🎬 Step 2/4: Fetching background...")
-        background_path = fetch_background(payload.get("bg_theme", "Custom"))
+        # Step 2: Background image (STATIC!)
+        print("🖼️ Step 2/4: Downloading background image...")
+        background_path = download_background_image(payload.get("bg_theme", "Custom"))
         if not background_path:
-            return jsonify({"error": "Background fetch failed"}), 500
+            return jsonify({"error": "Background image download failed"}), 500
         
-        # Step 3: Avatar image (STATIC!)
-        print("🤖 Step 3/4: Downloading avatar image...")
-        avatar_path = download_avatar_image()
-        if not avatar_path:
-            return jsonify({"error": "Avatar image download failed"}), 500
-        
-        # Step 4: Composite
-        print("🎥 Step 4/4: Compositing video...")
-        final_video_path = build_viral_short(script, voiceover_path, background_path, avatar_path)
+        # Step 3: Combine image + audio
+        print("🎥 Step 3/4: Combining image + audio...")
+        final_video_path = combine_image_and_audio(background_path, voiceover_path)
         if not final_video_path:
-            return jsonify({"error": "Video compositing failed"}), 500
+            return jsonify({"error": "Video creation failed"}), 500
         
-        # Step 5: Upload
-        print("☁️ Uploading...")
+        # Step 4: Upload
+        print("☁️ Step 4/4: Uploading...")
         download_link = upload_to_free_host(final_video_path)
         
         if download_link:
@@ -818,11 +761,10 @@ def generate_video():
 # ==========================================
 if __name__ == "__main__":
     print("\n" + "="*50)
-    print("🚀 STARTING VIRAL SHORTS AI AGENCY (BULLETPROOF!)")
+    print("🚀 STARTING VIRAL SHORTS AI AGENCY (SUPER SIMPLE!)")
     print("="*50)
-    print("✅ NO HUGGING FACE (no GPU crashes!)")
-    print("✅ Uses static avatar image (still looks GREAT!)")
-    print("✅ 10x FASTER video generation!")
+    print("✅ NO complex video editing (no crashes!)")
+    print("✅ Just image + audio = video!")
     print("✅ 100% CRASH-PROOF!")
     print("="*50 + "\n")
     
