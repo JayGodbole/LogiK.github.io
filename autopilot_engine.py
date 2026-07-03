@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎬 VIRAL SHORTS AI AGENCY — FIXED DOWNLOAD VERSION!
-========================================================
-✅ 100% CRASH-PROOF (no video creation!)
-✅ Files are GUARANTEED to be downloadable!
-✅ Saves to `static/` folder (Flask serves automatically)
+🎬 VIRAL SHORTS AI AGENCY — NO ZIP VERSION!
+====================================================
+✅ 100% CRASH-PROOF (no ZIP creation!)
+✅ Just gives clients: AI voiceover + background image
+✅ They download files separately (100% works!)
 ✅ 100% FREE, 100% automated!
 """
 
@@ -13,9 +13,8 @@ import sys
 import time
 import json
 import requests
-import zipfile
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template_string, send_file, send_from_directory
+from flask import Flask, request, jsonify, render_template_string, send_file
 
 # ==========================================
 # ENVIRONMENT VARIABLES (Set in Render.com)
@@ -35,7 +34,7 @@ STATIC_FOLDER = "static"
 os.makedirs(STATIC_FOLDER, exist_ok=True)
 
 # ==========================================
-# HTML WEBSITE (Updated messaging!)
+# HTML WEBSITE (Updated: Two Download Links!)
 # ==========================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -223,6 +222,7 @@ HTML_TEMPLATE = """
             font-size: 1.5rem;
             font-weight: bold;
             transition: 0.3s;
+            margin: 10px;
         }
         
         .download-button:hover {
@@ -401,9 +401,9 @@ HTML_TEMPLATE = """
             <!-- DOWNLOAD SECTION -->
             <div class="download-section" id="downloadSection">
                 <h3>🎉 YOUR FILES ARE READY!</h3>
-                <a href="#" class="download-button" id="downloadButton">📥 DOWNLOAD YOUR FILES (ZIP)</a>
-                <p style="margin-top: 20px; color: #aaa;">Contains: AI Voiceover (MP3) + Background Image (JPG)</p>
-                <p style="margin-top: 10px; color: #aaa;">Use these files in CapCut/InVideo to make your video!</p>
+                <a href="#" class="download-button" id="downloadVoiceover">📥 DOWNLOAD VOICEOVER (MP3)</a>
+                <a href="#" class="download-button" id="downloadImage">📥 DOWNLOAD IMAGE (JPG)</a>
+                <p style="margin-top: 20px; color: #aaa;">Use these files in CapCut/InVideo to make your video!</p>
             </div>
         </section>
         
@@ -503,15 +503,14 @@ HTML_TEMPLATE = """
             
             const steps = [
                 '🎤 Generating voiceover...',
-                '🖼️ Downloading background image...',
-                '📦 Zipping files...'
+                '🖼️ Downloading background image...'
             ];
             
             const interval = setInterval(() => {
                 if (progress < 90) {
                     progress += 10;
                     progressFill.style.width = progress + '%';
-                    progressText.textContent = steps[Math.floor(progress / 30)];
+                    progressText.textContent = steps[Math.floor(progress / 50)];
                 }
             }, 1000);
             
@@ -537,9 +536,10 @@ HTML_TEMPLATE = """
                 progressText.textContent = '✅ DONE!';
                 
                 if (result.success) {
-                    // Show download button
+                    // Show download buttons
                     document.getElementById('downloadSection').style.display = 'block';
-                    document.getElementById('downloadButton').href = result.download_link;
+                    document.getElementById('downloadVoiceover').href = result.voiceover_link;
+                    document.getElementById('downloadImage').href = result.image_link;
                     
                     // Scroll to download section
                     document.getElementById('downloadSection').scrollIntoView({ behavior: 'smooth' });
@@ -636,22 +636,6 @@ def download_background_image(bg_theme, output_path="background.jpg"):
         print(f"❌ Background image download error: {e}")
         return None
 
-def create_zip_file(voiceover_path, image_path, output_zip="files.zip"):
-    """Create a ZIP file containing voiceover + image"""
-    try:
-        with zipfile.ZipFile(output_zip, 'w') as zipf:
-            # Add voiceover
-            zipf.write(voiceover_path, os.path.basename(voiceover_path))
-            # Add image
-            zipf.write(image_path, os.path.basename(image_path))
-        
-        print(f"✅ ZIP file created: {output_zip}")
-        return output_zip
-    
-    except Exception as e:
-        print(f"❌ ZIP creation error: {e}")
-        return None
-
 # ==========================================
 # FLASK ROUTES
 # ==========================================
@@ -662,7 +646,7 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate_files():
-    """API endpoint to generate files (NO VIDEO!)"""
+    """API endpoint to generate files (NO ZIP!)"""
     try:
         payload = request.json
         
@@ -673,33 +657,28 @@ def generate_files():
         
         # Save files to `static/` folder (so they're downloadable!)
         voiceover_path = os.path.join(STATIC_FOLDER, "voiceover.mp3")
-        background_path = os.path.join(STATIC_FOLDER, "background.jpg")
-        zip_path = os.path.join(STATIC_FOLDER, "files.zip")
+        image_path = os.path.join(STATIC_FOLDER, "background.jpg")
         
         # Step 1: Voiceover
-        print("🎤 Step 1/3: Generating voiceover...")
+        print("🎤 Step 1/2: Generating voiceover...")
         voiceover = generate_voiceover(script, voiceover_path)
         if not voiceover:
             return jsonify({"error": "Voiceover generation failed"}), 500
         
         # Step 2: Background image
-        print("🖼️ Step 2/3: Downloading background image...")
-        background = download_background_image(payload.get("bg_theme", "Custom"), background_path)
+        print("🖼️ Step 2/2: Downloading background image...")
+        background = download_background_image(payload.get("bg_theme", "Custom"), image_path)
         if not background:
             return jsonify({"error": "Background image download failed"}), 500
         
-        # Step 3: Create ZIP
-        print("📦 Step 3/3: Creating ZIP file...")
-        zip_file = create_zip_file(voiceover_path, background_path, zip_path)
-        if not zip_file:
-            return jsonify({"error": "ZIP creation failed"}), 500
-        
-        # Generate download link (served from `static/` folder)
-        download_link = "/static/files.zip"
+        # Generate download links (NO ZIP!)
+        voiceover_link = "/static/voiceover.mp3"
+        image_link = "/static/background.jpg"
         
         return jsonify({
             "success": True,
-            "download_link": download_link,
+            "voiceover_link": voiceover_link,
+            "image_link": image_link,
             "message": "Your files are ready!"
         }), 200
     
@@ -712,11 +691,12 @@ def generate_files():
 # ==========================================
 if __name__ == "__main__":
     print("\n" + "="*50)
-    print("🚀 STARTING VIRAL SHORTS AI AGENCY (FIXED DOWNLOAD!)")
+    print("🚀 STARTING VIRAL SHORTS AI AGENCY (NO ZIP!)")
     print("="*50)
-    print("✅ Files saved to `static/` folder")
-    print("✅ GUARANTEED download link!")
-    print("✅ No more 'File not found' errors!")
+    print("✅ NO ZIP creation (no failures!)")
+    print("✅ Just AI voiceover + background image")
+    print("✅ Two separate download links")
+    print("✅ 100% CRASH-PROOF!")
     print("="*50 + "\n")
     
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
