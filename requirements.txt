@@ -1,0 +1,36 @@
+# ==========================================
+# 📦 REQUIREMENTS.TXT — FREE TOOLS NEEDED
+# ==========================================
+# Copy this entire file and save as "requirements.txt"
+# Upload it to your GitHub repo (same place as app.py)
+
+# --- CORE VIDEO TOOLS ---
+moviepy==1.0.3          # Video editing (free, no GPU needed)
+numpy                    # Math/array operations
+pillow                   # Image processing
+
+# --- TEXT-TO-SPEECH (Free AI Voices) ---
+edge-tts                 # Microsoft's free neural TTS (no API key!)
+# gTTS                    # Uncomment as backup if edge-tts fails
+
+# --- WEB FRAMEWORKS ---
+flask                    # Web server for Render.com
+streamlit                # Client-facing app (if not using Streamlit Cloud)
+requests                 # Fetch files from internet
+
+# --- AI AVATAR (Free Hugging Face GPU) ---
+gradio_client            # Connect to free Hugging Face spaces
+
+# --- OPTIONAL BUT HELPFUL ---
+python-dotenv           # Load environment variables
+wheel                    # Faster installs
+
+# ==========================================
+# 🎯 HOW TO USE THIS FILE
+# ==========================================
+# 1. Copy this entire code block
+# 2. Save as "requirements.txt" (exact name!)
+# 3. Upload to your GitHub repo (same folder as app.py)
+# 4. Render will auto-install these when you deploy
+
+# ✅ NO PAID TOOLS. 100% FREE!
