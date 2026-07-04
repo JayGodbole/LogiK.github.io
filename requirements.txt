@@ -15,7 +15,7 @@ edge-tts                 # Microsoft's free neural TTS (no API key!)
 
 # --- WEB FRAMEWORKS ---
 flask                    # Web server for Render.com
-streamlit                # Client-facing app (if not using Streamlit Cloud)
+
 requests                 # Fetch files from internet
 
 # --- AI AVATAR (Free Hugging Face GPU) ---
