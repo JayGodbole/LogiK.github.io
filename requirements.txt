@@ -1,6 +1,9 @@
 flask
 requests
 edge-tts
+moviepy==1.0.3
 Pillow
+numpy
 python-dotenv
 wheel
+imageio-ffmpeg
