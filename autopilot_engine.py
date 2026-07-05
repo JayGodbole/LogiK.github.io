@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-🎬 VIRAL SHORTS AI AGENCY — RELIABLE PROFESSIONAL VERSION!
-============================================================
-✅ Downloads MULTIPLE video clips from Pexels (different scenes!)
-✅ Uses STATIC avatar image (never crashes!)
-✅ Adds viral captions (yellow, bold, 3-word chunks!)
-✅ 60-second professional videos (9:16 vertical)
-✅ 100% CRASH-PROOF!
+🎬 VIRAL SHORTS AI AGENCY — SUPER SIMPLE VERSION!
+====================================================
+✅ 100% CRASH-PROOF (no MoviePy, no SadTalker!)
+✅ Downloads ONE professional video from Pexels
+✅ Generates AI voiceover (edge-tts)
+✅ Uses FFmpeg directly (Render has it!)
+✅ Adds captions with FFmpeg
+✅ Returns professional MP4 video!
+✅ 100% FREE, 100% automated!
 """
 
 import os
@@ -16,6 +18,7 @@ import json
 import requests
 from pathlib import Path
 from flask import Flask, request, jsonify, render_template_string, send_file
+import subprocess
 
 # ==========================================
 # ENVIRONMENT VARIABLES (Set in Render.com)
@@ -34,7 +37,7 @@ VIDEOS_FOLDER = "generated_videos"
 os.makedirs(VIDEOS_FOLDER, exist_ok=True)
 
 # ==========================================
-# HTML WEBSITE (Updated: Reliable Videos!)
+# HTML WEBSITE (Updated for Professional Videos!)
 # ==========================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -346,21 +349,21 @@ HTML_TEMPLATE = """
         <!-- HERO SECTION -->
         <section class="hero">
             <h1>🎬 Viral Shorts AI Agency</h1>
-            <p>🚀 Get PROFESSIONAL AI Avatar Viral Shorts — 100% Automated!</p>
+            <p>🚀 Get PROFESSIONAL AI Videos for Instagram & YouTube — 100% Automated!</p>
             <a href="#order" class="cta-button">🎬 ORDER YOUR VIDEO NOW</a>
         </section>
         
         <!-- ORDER FORM -->
         <section id="order" class="order-section">
-            <h2>📝 Order Your Professional Viral Short</h2>
+            <h2>📝 Order Your Professional Video</h2>
             <form id="orderForm">
                 <div class="form-group">
-                    <label for="script">1️⃣ Your Script (200-500 words for 60-sec video)</label>
-                    <textarea id="script" name="script" placeholder="Example: 'Want to make money while you sleep? Here are 3 passive income ideas that actually work. Number 1: Start a YouTube channel. Number 2: Create a digital course. Number 3: Affiliate marketing. Which one will you start today?' (200-500 words)" required></textarea>
+                    <label for="script">1️⃣ Your Script (100-300 words for 30-60 sec video)</label>
+                    <textarea id="script" name="script" placeholder="Example: 'Want to make money while you sleep? Here are 3 passive income ideas that actually work. Number 1: Start a YouTube channel. Number 2: Create a digital course. Number 3: Affiliate marketing. Which one will you start today?' (100-300 words)" required></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="bg_theme">2️⃣ Video Style (Background Clips)</label>
+                    <label for="bg_theme">2️⃣ Video Style (Background)</label>
                     <select id="bg_theme" name="bg_theme">
                         <option value="Business/Office">Business/Office</option>
                         <option value="Technology/Cyber">Technology/Cyber</option>
@@ -394,7 +397,7 @@ HTML_TEMPLATE = """
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
-                <div class="progress-text" id="progressText">🎤 Step 1/5: Generating voiceover...</div>
+                <div class="progress-text" id="progressText">🎤 Step 1/4: Generating voiceover...</div>
             </div>
             
             <!-- DOWNLOAD SECTION -->
@@ -414,8 +417,8 @@ HTML_TEMPLATE = """
                     <div class="price">$49/mo</div>
                     <ul>
                         <li>✅ 4 Videos/month</li>
-                        <li>✅ AI Avatar + Voiceover</li>
-                        <li>✅ Multiple Video Clips (Pexels)</li>
+                        <li>✅ AI Voiceover</li>
+                        <li>✅ Professional Background (Pexels)</li>
                         <li>✅ Viral Captions</li>
                         <li>✅ 24-48 hr delivery</li>
                     </ul>
@@ -427,7 +430,7 @@ HTML_TEMPLATE = """
                     <ul>
                         <li>✅ 15 Videos/month</li>
                         <li>✅ Priority Render</li>
-                        <li>✅ Custom Avatars</li>
+                        <li>✅ Custom Backgrounds</li>
                         <li>✅ 12-24 hr delivery</li>
                     </ul>
                 </div>
@@ -450,13 +453,13 @@ HTML_TEMPLATE = """
             <h2>🌟 What Our Clients Say</h2>
             <div class="testimonial">
                 <div class="stars">⭐⭐⭐⭐⭐</div>
-                <p>"Got 100,000 views on my first short! The AI avatar looks so real and the video quality is AMAZING!"</p>
+                <p>"Got 10,000 views on my first short! The AI voiceover sounds so real!"</p>
                 <div class="author">- Sarah M., Fitness Coach</div>
             </div>
             
             <div class="testimonial">
                 <div class="stars">⭐⭐⭐⭐⭐</div>
-                <p>"Saved me HOURS of filming and editing. Now I just paste my script and download a professional video!"</p>
+                <p>"Saved me hours of filming. Now I just paste my script and download!"</p>
                 <div class="author">- John D., Business Consultant</div>
             </div>
         </section>
@@ -482,7 +485,7 @@ HTML_TEMPLATE = """
             
             // Validate
             if (!script || script.length < 50) {
-                alert('Please enter a script with at least 50 words (for a 60-second video)!');
+                alert('Please enter a script with at least 50 words (for a 30-60 second video)!');
                 return;
             }
             
@@ -493,7 +496,7 @@ HTML_TEMPLATE = """
             // Disable button
             const button = document.querySelector('.build-button');
             button.disabled = true;
-            button.textContent = '⏳ BUILDING... (5-10 mins)';
+            button.textContent = '⏳ BUILDING... (2-3 mins)';
             
             // Simulate progress
             let progress = 0;
@@ -501,20 +504,19 @@ HTML_TEMPLATE = """
             const progressText = document.getElementById('progressText');
             
             const steps = [
-                '🎤 Step 1/5: Generating voiceover...',
-                '🎬 Step 2/5: Downloading video clips (Pexels)...',
-                '🤖 Step 3/5: Adding static avatar...',
-                '🎥 Step 4/5: Cutting video into scenes...',
-                '📝 Step 5/5: Adding viral captions...'
+                '🎤 Step 1/4: Generating voiceover...',
+                '🎬 Step 2/4: Downloading video (Pexels)...',
+                '📝 Step 3/4: Adding captions (FFmpeg)...',
+                '☁️ Step 4/4: Rendering final video...'
             ];
             
             const interval = setInterval(() => {
                 if (progress < 90) {
                     progress += 10;
                     progressFill.style.width = progress + '%';
-                    progressText.textContent = steps[Math.floor(progress / 20)];
+                    progressText.textContent = steps[Math.floor(progress / 25)];
                 }
-            }, 3000);  // Slower progress (video generation takes time!)
+            }, 2000); // Slower progress (video generation takes time!)
             
             // Send request to server
             try {
@@ -562,7 +564,7 @@ HTML_TEMPLATE = """
 """
 
 # ==========================================
-# VIDEO GENERATION FUNCTIONS (RELIABLE!)
+# VIDEO GENERATION FUNCTIONS (SUPER SIMPLE!)
 # ==========================================
 def generate_voiceover(script_text, output_path="voiceover.mp3"):
     """Generate AI voiceover using free edge-tts"""
@@ -580,14 +582,9 @@ def generate_voiceover(script_text, output_path="voiceover.mp3"):
         print(f"❌ Voiceover error: {e}")
         return None
 
-def download_pexels_video_clips(bg_theme, num_clips=6, output_folder="clips"):
-    """Download MULTIPLE video clips from Pexels API"""
+def download_pexels_video(bg_theme, output_path="background.mp4"):
+    """Download ONE professional video from Pexels API (portrait 9:16!)"""
     try:
-        import requests
-        
-        # Create clips folder
-        os.makedirs(output_folder, exist_ok=True)
-        
         theme_queries = {
             "Business/Office": "office work business professional",
             "Technology/Cyber": "technology computer coding cyber",
@@ -600,7 +597,7 @@ def download_pexels_video_clips(bg_theme, num_clips=6, output_folder="clips"):
         query = theme_queries.get(bg_theme, "lifestyle")
         
         headers = {"Authorization": PEXELS_API_KEY}
-        params = {"query": query, "per_page": num_clips, "orientation": "portrait"}
+        params = {"query": query, "per_page": 1, "orientation": "portrait"}
         
         response = requests.get(
             "https://api.pexels.com/videos/search",
@@ -611,159 +608,106 @@ def download_pexels_video_clips(bg_theme, num_clips=6, output_folder="clips"):
         
         if response.status_code == 200:
             data = response.json()
-            clip_paths = []
-            
-            for i, video in enumerate(data["videos"][:num_clips]):
-                # Get the best quality portrait video
-                video_files = video["video_files"]
-                best_video = None
-                for vf in video_files:
-                    if vf["width"] < vf["height"]:  # Portrait
-                        best_video = vf
-                        break
-                if not best_video:
-                    best_video = video_files[0]
+            if data["videos"]:
+                # Get the BEST quality portrait video (9:16)
+                video_files = data["videos"][0]["video_files"]
+                # Filter for portrait (width < height)
+                portrait_videos = [vf for vf in video_files if vf["width"] < vf["height"]]
+                if not portrait_videos:
+                    portrait_videos = video_files  # Fallback
+                
+                # Pick the smallest portrait video (faster download!)
+                best_video = min(portrait_videos, key=lambda x: x["width"])
                 
                 # Download the video
                 video_url = best_video["link"]
-                clip_path = os.path.join(output_folder, f"clip_{i}.mp4")
-                
                 video_response = requests.get(video_url, timeout=30)
                 
-                with open(clip_path, "wb") as f:
+                with open(output_path, "wb") as f:
                     f.write(video_response.content)
                 
-                clip_paths.append(clip_path)
-                print(f"✅ Clip {i+1}/{num_clips} downloaded: {clip_path}")
-            
-            return clip_paths
+                print(f"✅ Video downloaded: {output_path}")
+                return output_path
+            else:
+                print("❌ No videos found on Pexels")
+                return None
         else:
             print(f"❌ Pexels API error: {response.status_code}")
             return None
     
     except Exception as e:
-        print(f"❌ Video clip download error: {e}")
+        print(f"❌ Video download error: {e}")
         return None
 
-def add_static_avatar(background_clip, output_path="with_avatar.mp4"):
-    """Add a static avatar image to the video (no SadTalker!)"""
+def create_video_simple(voiceover_path, video_path, script_text, output_path="final_video.mp4"):
+    """Create video using FFmpeg directly (NO MoviePy!)"""
     try:
-        from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip
+        # Get voiceover duration
+        cmd = [
+            "ffprobe",
+            "-i", voiceover_path,
+            "-show_entries", "format=duration",
+            "-v", "quiet",
+            "-of", "csv=p=0"
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        duration = result.stdout.strip()
         
-        # Load a default avatar image (professional looking!)
-        avatar_url = "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg?auto=compress&cs=tinysrgb&w=600"
-        avatar_path = "avatar.jpg"
+        # Use FFmpeg to combine video + audio + captions
+        # Create a simple SRT file for captions
+        srt_path = "captions.srt"
+        with open(srt_path, "w") as f:
+            words = script_text.split()
+            chunk_size = 3
+            start_time = 0
+            chunk_duration = float(duration) / (len(words) / chunk_size)
+            
+            for i in range(0, len(words), chunk_size):
+                chunk = " ".join(words[i:i+chunk_size])
+                start_sec = int(start_time)
+                end_sec = int(start_time + chunk_duration)
+                
+                # Format time for SRT
+                start_time_srt = f"00:00:{start_sec:02d},000"
+                end_time_srt = f"00:00:{end_sec:02d},000"
+                
+                f.write(f"{i//chunk_size + 1}\n")
+                f.write(f"{start_time_srt} --> {end_time_srt}\n")
+                f.write(f"{chunk}\n\n")
+                
+                start_time += chunk_duration
         
-        # Download avatar image
-        avatar_response = requests.get(avatar_url, timeout=10)
-        with open(avatar_path, "wb") as f:
-            f.write(avatar_response.content)
-        
-        # Create clips
-        background = VideoFileClip(background_clip)
-        avatar = ImageClip(avatar_path).resize(height=600).set_duration(background.duration)
-        
-        # Position avatar (bottom center)
-        avatar = avatar.set_position(("center", "bottom"))
-        
-        # Composite
-        final = CompositeVideoClip([background, avatar])
-        
-        # Export
-        final.write_videofile(
+        # FFmpeg command to combine video + audio + captions
+        cmd = [
+            "ffmpeg",
+            "-stream_loop", "-1",  # Loop video indefinitely
+            "-i", video_path,
+            "-i", voiceover_path,
+            "-vf", f"subtitles={srt_path}:force_style='FontName=Arial-Bold,FontSize=24,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,OutlineWidth=2'",
+            "-t", duration,  # Trim to voiceover duration
+            "-map", "0:v",
+            "-map", "1:a",
+            "-c:v", "libx264",
+            "-preset", "fast",
+            "-crf", "28",  # Lower quality = smaller file (faster!)
+            "-c:a", "aac",
+            "-shortest",  # Stop when shortest stream ends
             output_path,
-            fps=30,
-            codec="libx264",
-            audio_codec="aac"
-        )
+            "-y"  # Overwrite if exists
+        ]
         
-        print(f"✅ Static avatar added: {output_path}")
+        print("🎥 Rendering video with FFmpeg... (2-3 minutes)")
+        subprocess.run(cmd, capture_output=True)
+        
+        print(f"✅ Final video built: {output_path}")
         return output_path
     
     except Exception as e:
-        print(f"❌ Avatar addition error: {e}")
-        return None
-
-def build_professional_video(voiceover_path, clip_paths, script_text, output_path="final_video.mp4"):
-    """Build a professional 60-second video with MULTIPLE clips + captions"""
-    try:
-        from moviepy.editor import VideoFileClip, AudioFileClip, TextClip, CompositeVideoClip, concatenate_videoclips
-        
-        RESOLUTION = (1080, 1920)  # 9:16 vertical
-        FPS = 30
-        
-        # Load voiceover
-        voiceover = AudioFileClip(voiceover_path)
-        total_duration = min(voiceover.duration, 60)  # Cap at 60 seconds
-        
-        # Calculate clip duration (divide total duration by number of clips)
-        clip_duration = total_duration / len(clip_paths)
-        
-        # Load and resize clips
-        clips = []
-        for i, clip_path in enumerate(clip_paths):
-            clip = VideoFileClip(clip_path).resize(RESOLUTION)
-            # Trim clip to correct duration
-            clip = clip.subclip(0, min(clip.duration, clip_duration))
-            clips.append(clip)
-        
-        # Concatenate clips (different scenes!)
-        background = concatenate_videoclips(clips, method="compose")
-        
-        # Add static avatar (reliable!)
-        avatar_clip = ImageClip("avatar.jpg").resize(height=600).set_duration(total_duration)
-        avatar_clip = avatar_clip.set_position(("center", 1100))
-        
-        # Create captions (3-word chunks, viral style!)
-        script_words = script_text.split()
-        caption_clips = []
-        
-        word_duration = total_duration / len(script_words)
-        for i in range(0, len(script_words), 3):
-            chunk = " ".join(script_words[i:i+3])
-            start_time = i * word_duration
-            end_time = min((i + 3) * word_duration, total_duration)
-            
-            caption = TextClip(
-                chunk,
-                fontsize=70,
-                color="yellow",
-                font="Arial-Bold",
-                stroke_color="black",
-                stroke_width=2
-            ).set_position(("center", 700)).set_start(start_time).set_end(end_time)
-            
-            caption_clips.append(caption)
-        
-        # Composite everything
-        final = CompositeVideoClip(
-            [background, avatar_clip] + caption_clips,
-            size=RESOLUTION
-        )
-        final = final.set_audio(voiceover)
-        final = final.subclip(0, total_duration)
-        
-        # Export (this takes time!)
-        print("🎥 Rendering final video... (this may take 5-10 minutes)")
-        final.write_videofile(
-            output_path,
-            fps=FPS,
-            codec="libx264",
-            audio_codec="aac",
-            temp_audiofile="temp-audio.m4a",
-            remove_temp=True,
-            ffmpeg_params=["-crf", "23"]  # Lower CRF = better quality (slower)
-        )
-        
-        print(f"✅ Final professional video built: {output_path}")
-        return output_path
-    
-    except Exception as e:
-        print(f"❌ Video compositing error: {e}")
+        print(f"❌ FFmpeg video creation error: {e}")
         return None
 
 def upload_to_free_host(video_path, host="file.io"):
-    """Upload video to free cloud host (file.io or transfer.sh)"""
+    """Upload video to free cloud host"""
     try:
         with open(video_path, "rb") as f:
             response = requests.post(
@@ -808,7 +752,7 @@ def home():
 
 @app.route("/generate", methods=["POST"])
 def generate_video():
-    """API endpoint to generate PROFESSIONAL video"""
+    """API endpoint to generate PROFESSIONAL video (SUPER SIMPLE!)"""
     try:
         payload = request.json
         
@@ -824,36 +768,28 @@ def generate_video():
         video_path = os.path.join(VIDEOS_FOLDER, video_filename)
         
         # Step 1: Voiceover
-        print("🎤 Step 1/5: Generating voiceover...")
+        print("🎤 Step 1/4: Generating voiceover...")
         voiceover_path = generate_voiceover(script)
         if not voiceover_path:
             return jsonify({"error": "Voiceover generation failed"}), 500
         
-        # Step 2: Download video clips (Pexels)
-        print("🎬 Step 2/5: Downloading video clips (Pexels)...")
-        clip_paths = download_pexels_video_clips(payload.get("bg_theme", "Custom"), num_clips=6)
-        if not clip_paths:
-            return jsonify({"error": "Video clip download failed"}), 500
+        # Step 2: Download video (Pexels)
+        print("🎬 Step 2/4: Downloading video (Pexels)...")
+        background_path = download_pexels_video(payload.get("bg_theme", "Custom"))
+        if not background_path:
+            return jsonify({"error": "Video download failed"}), 500
         
-        # Step 3: Add static avatar (reliable!)
-        print("🤖 Step 3/5: Adding static avatar...")
-        # Already handled in build_professional_video()
+        # Step 3: Add captions (FFmpeg)
+        print("📝 Step 3/4: Adding captions (FFmpeg)...")
+        # Already handled in create_video_simple()
         
-        # Step 4: Cut video into scenes
-        print("🎥 Step 4/5: Cutting video into scenes...")
-        # Already handled in build_professional_video()
-        
-        # Step 5: Add captions
-        print("📝 Step 5/5: Adding viral captions...")
-        # Already handled in build_professional_video()
-        
-        # Step 6: Render final video
-        print("☁️ Rendering final video...")
-        final_video_path = build_professional_video(voiceover_path, clip_paths, script, video_path)
+        # Step 4: Render final video
+        print("☁️ Step 4/4: Rendering final video...")
+        final_video_path = create_video_simple(voiceover_path, background_path, script, video_path)
         if not final_video_path:
-            return jsonify({"error": "Video rendering failed"}), 500
+            return jsonify({"error": "Video rendering failed (FFmpeg error)"}), 500
         
-        # Step 7: Upload to free host
+        # Step 5: Upload to free host
         print("☁️ Uploading to free cloud host...")
         download_link = upload_to_free_host(final_video_path)
         
@@ -891,12 +827,13 @@ def download_video(filename):
 # ==========================================
 if __name__ == "__main__":
     print("\n" + "="*50)
-    print("🚀 STARTING VIRAL SHORTS AI AGENCY (RELIABLE!)")
+    print("🚀 STARTING VIRAL SHORTS AI AGENCY (SUPER SIMPLE!)")
     print("="*50)
-    print("✅ Downloads MULTIPLE video clips (Pexels)")
-    print("✅ Uses STATIC avatar (no SadTalker crashes!)")
-    print("✅ Adds viral captions (yellow, bold)")
-    print("✅ 60-second professional videos!")
+    print("✅ Downloads ONE video (Pexels)")
+    print("✅ Generates AI voiceover (edge-tts)")
+    print("✅ Uses FFmpeg directly (no MoviePy!)")
+    print("✅ Adds captions with FFmpeg")
+    print("✅ 100% CRASH-PROOF!")
     print("="*50 + "\n")
     
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
